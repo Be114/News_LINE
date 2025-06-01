@@ -51,7 +51,9 @@ cp .env.example .env
 必要な環境変数：
 - `LINE_CHANNEL_ACCESS_TOKEN`: LINE Bot のアクセストークン
 - `LINE_CHANNEL_SECRET`: LINE Bot のチャンネルシークレット
-- `OPENAI_API_KEY`: OpenAI API キー（オプション）
+- `OPENROUTER_API_KEY`: OpenRouter API キー（Gemini 2.5 Flash使用）
+- `OPENROUTER_SITE_URL`: サイト URL（オプション）
+- `OPENROUTER_SITE_NAME`: サイト名（オプション）
 
 ### 3. サーバーの起動
 
@@ -144,13 +146,21 @@ LINE Bot を友達追加後：
 3. チャンネルアクセストークンとシークレットを取得
 4. Webhook URL を設定: `https://your-domain.com/api/line/webhook`
 
-### OpenAI 設定（オプション）
+### OpenRouter 設定（AI要約用）
 
-1. [OpenAI](https://openai.com/) でアカウントを作成
+1. [OpenRouter](https://openrouter.ai/) でアカウントを作成
 2. API キーを取得
 3. `.env` ファイルに設定
 
-> **注意**: OpenAI API キーが設定されていない場合、フォールバック要約機能が使用されます。
+```env
+OPENROUTER_API_KEY=your_openrouter_api_key
+OPENROUTER_SITE_URL=https://news-line-app.com  # オプション
+OPENROUTER_SITE_NAME=News LINE                 # オプション
+```
+
+> **注意**: OpenRouter API キーが設定されていない場合、フォールバック要約機能が使用されます。
+>
+> **モデル**: Gemini 2.5 Flash (`google/gemini-2.5-flash-preview-05-20`) を使用します。
 
 ## 📊 監視・ログ
 

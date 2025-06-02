@@ -67,6 +67,16 @@
             padding: 1rem;
             min-height: 100px;
         }
+        .nav-pills .nav-link.active {
+            background-color: #1DB446;
+        }
+        .table-responsive {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .small-text {
+            font-size: 0.875rem;
+        }
     </style>
 </head>
 <body>
@@ -93,171 +103,442 @@
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <div class="text-center">
-                                    <h5 class="text-muted">処理済み記事数</h5>
-                                    <h3 class="text-primary" id="articles-count">-</h3>
+                                    <h6 class="text-muted">総ユーザー数</h6>
+                                    <h4 class="text-primary" id="users-count">-</h4>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <div class="text-center">
-                                    <h5 class="text-muted">送信済みメッセージ</h5>
-                                    <h3 class="text-success" id="messages-count">-</h3>
+                                    <h6 class="text-muted">RSS フィード</h6>
+                                    <h4 class="text-info" id="feeds-count">-</h4>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <div class="text-center">
-                                    <h5 class="text-muted">LINE Bot</h5>
+                                    <h6 class="text-muted">総記事数</h6>
+                                    <h4 class="text-warning" id="articles-count">-</h4>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="text-center">
+                                    <h6 class="text-muted">配信数</h6>
+                                    <h4 class="text-success" id="deliveries-count">-</h4>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="text-center">
+                                    <h6 class="text-muted">LINE Bot</h6>
                                     <span class="badge status-badge" id="line-status">確認中...</span>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <div class="text-center">
-                                    <h5 class="text-muted">要約エンジン</h5>
+                                    <h6 class="text-muted">要約エンジン</h6>
                                     <span class="badge status-badge" id="summarizer-status">確認中...</span>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <!-- Article Testing -->
-            <div class="col-lg-6">
-                <div class="card">
-                    <div class="card-header">
-                        <i class="fas fa-newspaper"></i> 記事テスト
-                    </div>
-                    <div class="card-body">
-                        <form id="article-test-form">
-                            <div class="mb-3">
-                                <label for="article-url" class="form-label">記事URL</label>
-                                <input type="url" class="form-control" id="article-url" 
-                                       placeholder="https://example.com/news-article" required>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-muted">スケジューラー状態</h6>
+                                <div id="scheduler-status">
+                                    <span class="badge bg-secondary">確認中...</span>
+                                </div>
                             </div>
-                            <div class="mb-3">
-                                <label for="summary-level" class="form-label">要約レベル</label>
-                                <select class="form-select" id="summary-level">
-                                    <option value="brief">簡潔版 (1-2文)</option>
-                                    <option value="standard" selected>標準版 (3-5文)</option>
-                                    <option value="detailed">詳細版 (6-10文)</option>
-                                </select>
+                            <div class="col-md-6">
+                                <h6 class="text-muted">稼働時間</h6>
+                                <span id="uptime">-</span>
                             </div>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-play"></i> 記事を処理
-                            </button>
-                            <div class="loading mt-2">
-                                <i class="fas fa-spinner fa-spin"></i> 処理中...
-                            </div>
-                        </form>
-                        
-                        <div id="article-result" class="mt-3" style="display: none;">
-                            <h6>結果:</h6>
-                            <div class="summary-output" id="article-output"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- LINE Testing -->
-            <div class="col-lg-6">
-                <div class="card">
-                    <div class="card-header">
-                        <i class="fab fa-line"></i> LINE テスト
-                    </div>
-                    <div class="card-body">
-                        <form id="line-test-form">
-                            <div class="mb-3">
-                                <label for="line-user-id" class="form-label">LINE ユーザーID</label>
-                                <input type="text" class="form-control" id="line-user-id" 
-                                       placeholder="U1234567890abcdef..." required>
-                                <div class="form-text">LINE BotでユーザーIDを確認してください</div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="test-message" class="form-label">テストメッセージ</label>
-                                <textarea class="form-control" id="test-message" rows="3" 
-                                          placeholder="テストメッセージを入力...">これはNews LINEからのテストメッセージです。🤖</textarea>
-                            </div>
-                            <button type="submit" class="btn btn-line">
-                                <i class="fab fa-line"></i> メッセージ送信
-                            </button>
-                            <div class="loading mt-2">
-                                <i class="fas fa-spinner fa-spin"></i> 送信中...
-                            </div>
-                        </form>
-                        
-                        <div id="line-result" class="mt-3" style="display: none;">
-                            <div class="alert" id="line-alert"></div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Complete Processing -->
+        <!-- Navigation Tabs -->
         <div class="row">
             <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <i class="fas fa-cogs"></i> 完全処理テスト (記事取得 → 要約 → LINE送信)
-                    </div>
-                    <div class="card-body">
-                        <form id="complete-test-form">
-                            <div class="row">
-                                <div class="col-md-4">
+                <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="pills-test-tab" data-bs-toggle="pill" data-bs-target="#pills-test" type="button" role="tab">
+                            <i class="fas fa-flask"></i> テスト機能
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="pills-feeds-tab" data-bs-toggle="pill" data-bs-target="#pills-feeds" type="button" role="tab">
+                            <i class="fas fa-rss"></i> RSS フィード管理
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="pills-users-tab" data-bs-toggle="pill" data-bs-target="#pills-users" type="button" role="tab">
+                            <i class="fas fa-users"></i> ユーザー管理
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="pills-scheduler-tab" data-bs-toggle="pill" data-bs-target="#pills-scheduler" type="button" role="tab">
+                            <i class="fas fa-clock"></i> スケジューラー
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="pills-articles-tab" data-bs-toggle="pill" data-bs-target="#pills-articles" type="button" role="tab">
+                            <i class="fas fa-newspaper"></i> 記事一覧
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="pills-logs-tab" data-bs-toggle="pill" data-bs-target="#pills-logs" type="button" role="tab">
+                            <i class="fas fa-list"></i> ログ
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="pills-tabContent">
+            <!-- Test Functions Tab -->
+            <div class="tab-pane fade show active" id="pills-test" role="tabpanel">
+                <div class="row">
+                    <!-- Article Testing -->
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-newspaper"></i> 記事テスト
+                            </div>
+                            <div class="card-body">
+                                <form id="article-test-form">
                                     <div class="mb-3">
-                                        <label for="complete-url" class="form-label">記事URL</label>
-                                        <input type="url" class="form-control" id="complete-url" 
-                                               placeholder="https://example.com/news" required>
+                                        <label for="article-url" class="form-label">記事URL</label>
+                                        <input type="url" class="form-control" id="article-url" 
+                                               placeholder="https://example.com/news-article" required>
                                     </div>
-                                </div>
-                                <div class="col-md-4">
                                     <div class="mb-3">
-                                        <label for="complete-user-id" class="form-label">LINE ユーザーID</label>
-                                        <input type="text" class="form-control" id="complete-user-id" 
-                                               placeholder="U1234567890abcdef..." required>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                        <label for="complete-level" class="form-label">要約レベル</label>
-                                        <select class="form-select" id="complete-level">
-                                            <option value="brief">簡潔版</option>
-                                            <option value="standard" selected>標準版</option>
-                                            <option value="detailed">詳細版</option>
+                                        <label for="summary-level" class="form-label">要約レベル</label>
+                                        <select class="form-select" id="summary-level">
+                                            <option value="brief">簡潔版 (1-2文)</option>
+                                            <option value="standard" selected>標準版 (3-5文)</option>
+                                            <option value="detailed">詳細版 (6-10文)</option>
                                         </select>
                                     </div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-play"></i> 記事を処理
+                                    </button>
+                                    <div class="loading mt-2">
+                                        <i class="fas fa-spinner fa-spin"></i> 処理中...
+                                    </div>
+                                </form>
+                                
+                                <div id="article-result" class="mt-3" style="display: none;">
+                                    <h6>結果:</h6>
+                                    <div class="summary-output" id="article-output"></div>
                                 </div>
                             </div>
-                            <div class="mb-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="use-flex-message">
-                                    <label class="form-check-label" for="use-flex-message">
-                                        Flex Message を使用 (リッチフォーマット)
-                                    </label>
+                        </div>
+                    </div>
+
+                    <!-- LINE Testing -->
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fab fa-line"></i> LINE テスト
+                            </div>
+                            <div class="card-body">
+                                <form id="line-test-form">
+                                    <div class="mb-3">
+                                        <label for="line-user-id" class="form-label">LINE ユーザーID</label>
+                                        <input type="text" class="form-control" id="line-user-id" 
+                                               placeholder="U1234567890abcdef..." required>
+                                        <div class="form-text">LINE BotでユーザーIDを確認してください</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="test-message" class="form-label">テストメッセージ</label>
+                                        <textarea class="form-control" id="test-message" rows="3" 
+                                                  placeholder="テストメッセージを入力...">これはNews LINEからのテストメッセージです。🤖</textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-line">
+                                        <i class="fab fa-line"></i> メッセージ送信
+                                    </button>
+                                    <div class="loading mt-2">
+                                        <i class="fas fa-spinner fa-spin"></i> 送信中...
+                                    </div>
+                                </form>
+                                
+                                <div id="line-result" class="mt-3" style="display: none;">
+                                    <div class="alert" id="line-alert"></div>
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-success">
-                                <i class="fas fa-rocket"></i> 完全処理実行
-                            </button>
-                            <div class="loading mt-2">
-                                <i class="fas fa-spinner fa-spin"></i> 処理中...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Complete Processing -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-cogs"></i> 完全処理テスト (記事取得 → 要約 → LINE送信)
                             </div>
-                        </form>
-                        
-                        <div id="complete-result" class="mt-3" style="display: none;">
-                            <div class="alert" id="complete-alert"></div>
+                            <div class="card-body">
+                                <form id="complete-test-form">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="complete-url" class="form-label">記事URL</label>
+                                                <input type="url" class="form-control" id="complete-url" 
+                                                       placeholder="https://example.com/news" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="complete-user-id" class="form-label">LINE ユーザーID</label>
+                                                <input type="text" class="form-control" id="complete-user-id" 
+                                                       placeholder="U1234567890abcdef..." required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="complete-level" class="form-label">要約レベル</label>
+                                                <select class="form-select" id="complete-level">
+                                                    <option value="brief">簡潔版</option>
+                                                    <option value="standard" selected>標準版</option>
+                                                    <option value="detailed">詳細版</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-rocket"></i> 完全処理実行
+                                    </button>
+                                    <div class="loading mt-2">
+                                        <i class="fas fa-spinner fa-spin"></i> 処理中...
+                                    </div>
+                                </form>
+                                
+                                <div id="complete-result" class="mt-3" style="display: none;">
+                                    <div class="alert" id="complete-alert"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- System Logs -->
-        <div class="row">
-            <div class="col-12">
+            <!-- RSS Feeds Tab -->
+            <div class="tab-pane fade" id="pills-feeds" role="tabpanel">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-plus"></i> RSS フィード追加
+                            </div>
+                            <div class="card-body">
+                                <form id="add-feed-form">
+                                    <div class="mb-3">
+                                        <label for="feed-name" class="form-label">フィード名</label>
+                                        <input type="text" class="form-control" id="feed-name" 
+                                               placeholder="例: NHK ニュース" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="feed-url" class="form-label">RSS URL</label>
+                                        <input type="url" class="form-control" id="feed-url" 
+                                               placeholder="https://example.com/rss" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-plus"></i> フィード追加
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="testFeed()">
+                                        <i class="fas fa-test-tube"></i> テスト
+                                    </button>
+                                    <div class="loading mt-2">
+                                        <i class="fas fa-spinner fa-spin"></i> 処理中...
+                                    </div>
+                                </form>
+                                
+                                <div id="feed-test-result" class="mt-3" style="display: none;">
+                                    <h6>テスト結果:</h6>
+                                    <div class="summary-output" id="feed-test-output"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-rss"></i> 登録済みフィード</span>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="refreshFeeds()">
+                                    <i class="fas fa-sync-alt"></i> 更新
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>名前</th>
+                                                <th>最終取得</th>
+                                                <th>状態</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="feeds-table">
+                                            <tr>
+                                                <td colspan="3" class="text-center text-muted">
+                                                    <i class="fas fa-spinner fa-spin"></i> 読み込み中...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Tab -->
+            <div class="tab-pane fade" id="pills-users" role="tabpanel">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-users"></i> ユーザー一覧</span>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="refreshUsers()">
+                            <i class="fas fa-sync-alt"></i> 更新
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>LINE ID</th>
+                                        <th>表示名</th>
+                                        <th>要約レベル</th>
+                                        <th>配信時間</th>
+                                        <th>状態</th>
+                                        <th>登録日</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="users-table">
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted">
+                                            <i class="fas fa-spinner fa-spin"></i> 読み込み中...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scheduler Tab -->
+            <div class="tab-pane fade" id="pills-scheduler" role="tabpanel">
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-rss"></i> フィード取得
+                            </div>
+                            <div class="card-body text-center">
+                                <p class="text-muted">RSS フィードから新しい記事を取得し、要約を生成します。</p>
+                                <button class="btn btn-primary" onclick="triggerFeedFetching()">
+                                    <i class="fas fa-download"></i> 手動実行
+                                </button>
+                                <div class="mt-2 small-text text-muted">
+                                    自動実行: 毎時0分
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-paper-plane"></i> 記事配信
+                            </div>
+                            <div class="card-body text-center">
+                                <p class="text-muted">ユーザーの設定に基づいて記事を配信します。</p>
+                                <button class="btn btn-success" onclick="triggerArticleDelivery()">
+                                    <i class="fas fa-send"></i> 手動実行
+                                </button>
+                                <div class="mt-2 small-text text-muted">
+                                    自動実行: 30分毎
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-trash"></i> クリーンアップ
+                            </div>
+                            <div class="card-body text-center">
+                                <p class="text-muted">古いデータを削除してデータベースを最適化します。</p>
+                                <button class="btn btn-warning" onclick="triggerCleanup()">
+                                    <i class="fas fa-broom"></i> 手動実行
+                                </button>
+                                <div class="mt-2 small-text text-muted">
+                                    自動実行: 毎日2:00
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-clock"></i> スケジューラー結果
+                            </div>
+                            <div class="card-body">
+                                <div id="scheduler-results" class="summary-output">
+                                    結果がここに表示されます...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Articles Tab -->
+            <div class="tab-pane fade" id="pills-articles" role="tabpanel">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-newspaper"></i> 最近の記事</span>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="refreshArticles()">
+                            <i class="fas fa-sync-alt"></i> 更新
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>タイトル</th>
+                                        <th>フィード</th>
+                                        <th>要約</th>
+                                        <th>公開日</th>
+                                        <th>処理日</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="articles-table">
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted">
+                                            <i class="fas fa-spinner fa-spin"></i> 読み込み中...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logs Tab -->
+            <div class="tab-pane fade" id="pills-logs" role="tabpanel">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <span><i class="fas fa-list"></i> システムログ</span>

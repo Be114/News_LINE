@@ -5,6 +5,8 @@ const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const logger = require('./utils/logger');
+const database = require('./services/database');
+const scheduler = require('./services/scheduler');
 const articleRoutes = require('./routes/articles');
 const lineRoutes = require('./routes/line');
 const adminRoutes = require('./routes/admin');
@@ -78,6 +80,24 @@ app.use((req, res) => {
     error: 'Not found',
     message: 'The requested resource was not found'
   });
+});
+
+// Initialize scheduler
+scheduler.init();
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  logger.info('SIGTERM received, shutting down gracefully');
+  scheduler.destroy();
+  database.close();
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  logger.info('SIGINT received, shutting down gracefully');
+  scheduler.destroy();
+  database.close();
+  process.exit(0);
 });
 
 // Start server

@@ -4,6 +4,9 @@ const fs = require('fs').promises;
 const path = require('path');
 
 const logger = require('../utils/logger');
+const database = require('../services/database');
+const scheduler = require('../services/scheduler');
+const feedParser = require('../services/feedParser');
 const lineMessaging = require('../services/lineMessaging');
 const summarizer = require('../services/summarizer');
 
@@ -21,17 +24,27 @@ let systemStats = {
 // Get system statistics
 router.get('/stats', async (req, res) => {
   try {
+    // Get database stats
+    const dbStats = await database.getStats();
+    
     // Get log file stats if available
     const logStats = await getLogStats();
+    
+    // Get scheduler status
+    const jobStatus = scheduler.getJobStatus();
     
     res.json({
       success: true,
       data: {
         ...systemStats,
+        database: dbStats,
+        scheduler: jobStatus,
         logStats,
         services: {
           lineMessaging: lineMessaging.isConfigured() ? 'Active' : 'Not configured',
-          summarizer: summarizer.openai ? 'OpenAI Active' : 'Fallback mode',
+          summarizer: 'OpenRouter/Gemini Active',
+          database: 'SQLite Active',
+          scheduler: 'Active',
           uptime: Math.floor((Date.now() - new Date(systemStats.systemStartTime).getTime()) / 1000)
         },
         timestamp: new Date().toISOString()
@@ -260,6 +273,254 @@ router.post('/update-stats',
     }
   }
 );
+
+// Helper function to get log statistics
+async function getLogStats() {
+  try {
+    const logsDir = path.join(process.cwd(), 'logs');
+    const files = await fs.readdir(logsDir).catch(() => []);
+    
+    const stats = {};
+    for (const file of files) {
+      try {
+        const filePath = path.join(logsDir, file);
+        const stat = await fs.stat(filePath);
+        stats[file] = {
+          size: stat.size,
+          modified: stat.mtime.toISOString()
+        };
+      } catch (error) {
+        // Ignore file stat errors
+      }
+    }
+
+    return stats;
+  } catch (error) {
+    return {};
+  }
+}
+
+// RSS Feed Management Endpoints
+
+// GET /api/admin/feeds
+// Get all RSS feeds
+router.get('/feeds', async (req, res) => {
+  try {
+    const feeds = await database.getAllFeeds();
+    res.json({
+      success: true,
+      data: {
+        feeds,
+        count: feeds.length
+      }
+    });
+  } catch (error) {
+    logger.error('Failed to get feeds:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to retrieve feeds',
+      message: error.message
+    });
+  }
+});
+
+// POST /api/admin/feeds
+// Add new RSS feed
+router.post('/feeds',
+  [
+    body('name').notEmpty().withMessage('Feed name is required'),
+    body('url').isURL().withMessage('Valid URL is required')
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          error: 'Validation failed',
+          details: errors.array()
+        });
+      }
+
+      const { name, url } = req.body;
+      const feed = await feedParser.addFeed(name, url);
+      
+      res.json({
+        success: true,
+        data: feed,
+        message: 'Feed added successfully'
+      });
+    } catch (error) {
+      logger.error('Failed to add feed:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to add feed',
+        message: error.message
+      });
+    }
+  }
+);
+
+// POST /api/admin/feeds/test
+// Test RSS feed parsing
+router.post('/feeds/test',
+  [
+    body('url').isURL().withMessage('Valid URL is required')
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          error: 'Validation failed',
+          details: errors.array()
+        });
+      }
+
+      const { url } = req.body;
+      const testData = await feedParser.getTestFeedData(url, 3);
+      
+      res.json({
+        success: true,
+        data: {
+          url,
+          sampleArticles: testData,
+          count: testData.length
+        }
+      });
+    } catch (error) {
+      logger.error('Failed to test feed:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to test feed',
+        message: error.message
+      });
+    }
+  }
+);
+
+// Scheduler Management Endpoints
+
+// POST /api/admin/scheduler/trigger-feeds
+// Manually trigger feed fetching
+router.post('/scheduler/trigger-feeds', async (req, res) => {
+  try {
+    const results = await scheduler.triggerFeedFetching();
+    res.json({
+      success: true,
+      data: results,
+      message: 'Feed fetching triggered successfully'
+    });
+  } catch (error) {
+    logger.error('Failed to trigger feed fetching:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to trigger feed fetching',
+      message: error.message
+    });
+  }
+});
+
+// POST /api/admin/scheduler/trigger-delivery
+// Manually trigger article delivery
+router.post('/scheduler/trigger-delivery', async (req, res) => {
+  try {
+    const results = await scheduler.triggerArticleDelivery();
+    res.json({
+      success: true,
+      data: results,
+      message: 'Article delivery triggered successfully'
+    });
+  } catch (error) {
+    logger.error('Failed to trigger article delivery:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to trigger article delivery',
+      message: error.message
+    });
+  }
+});
+
+// POST /api/admin/scheduler/trigger-cleanup
+// Manually trigger cleanup
+router.post('/scheduler/trigger-cleanup', async (req, res) => {
+  try {
+    const results = await scheduler.triggerCleanup();
+    res.json({
+      success: true,
+      data: results,
+      message: 'Cleanup triggered successfully'
+    });
+  } catch (error) {
+    logger.error('Failed to trigger cleanup:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to trigger cleanup',
+      message: error.message
+    });
+  }
+});
+
+// User Management Endpoints
+
+// GET /api/admin/users
+// Get all users
+router.get('/users', async (req, res) => {
+  try {
+    const users = await getAllUsers();
+    res.json({
+      success: true,
+      data: {
+        users,
+        count: users.length
+      }
+    });
+  } catch (error) {
+    logger.error('Failed to get users:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to retrieve users',
+      message: error.message
+    });
+  }
+});
+
+// GET /api/admin/articles
+// Get recent articles
+router.get('/articles', async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 20;
+    const articles = await database.getRecentArticles(limit);
+    res.json({
+      success: true,
+      data: {
+        articles,
+        count: articles.length,
+        limit
+      }
+    });
+  } catch (error) {
+    logger.error('Failed to get articles:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to retrieve articles',
+      message: error.message
+    });
+  }
+});
+
+// Helper function to get all users
+async function getAllUsers() {
+  return new Promise((resolve, reject) => {
+    const sql = `SELECT id, line_user_id, display_name, summary_level, delivery_time, timezone, active, created_at FROM users ORDER BY created_at DESC`;
+    database.db.all(sql, [], (err, rows) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(rows);
+      }
+    });
+  });
+}
 
 // Helper function to get log statistics
 async function getLogStats() {

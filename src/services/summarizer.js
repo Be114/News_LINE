@@ -44,7 +44,7 @@ class Summarizer {
   async summarizeWithOpenRouter(text, level) {
     const config = this.summaryLevels[level] || this.summaryLevels.standard;
     
-    const prompt = `Please summarize the following news article in exactly ${config.sentences} sentences. Make it clear, concise, and informative:\n\n${text}`;
+    const prompt = `以下のニュース記事を日本語で${config.sentences}文で要約してください。重要なポイントを分かりやすく、簡潔にまとめてください：\n\n${text}`;
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -59,7 +59,7 @@ class Summarizer {
         "messages": [
           {
             "role": "system",
-            "content": "You are a professional news summarizer. Create accurate, concise summaries that capture the key information."
+            "content": "あなたは専門的なニュース要約者です。正確で簡潔な日本語の要約を作成し、重要な情報を確実に含めてください。"
           },
           {
             "role": "user",
@@ -136,11 +136,11 @@ class Summarizer {
             "messages": [
               {
                 "role": "system",
-                "content": "Extract the most important keywords from the given text. Return only the keywords separated by commas, no explanations."
+                "content": "与えられたテキストから最も重要なキーワードを日本語で抽出してください。キーワードのみをカンマ区切りで返し、説明は不要です。"
               },
               {
                 "role": "user",
-                "content": `Extract ${maxKeywords} key terms from this text:\n\n${text}`
+                "content": `このテキストから${maxKeywords}個の重要なキーワードを日本語で抽出してください：\n\n${text}`
               }
             ],
             "max_tokens": 100,

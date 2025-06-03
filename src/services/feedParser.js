@@ -174,7 +174,7 @@ class FeedParserService {
   async processArticleAsync(articleId, url) {
     try {
       // Extract full article content
-      const extractedContent = await articleExtractor.extract(url);
+      const extractedContent = await articleExtractor.extractFromUrl(url);
       
       if (extractedContent && extractedContent.content) {
         // Generate summary and keywords

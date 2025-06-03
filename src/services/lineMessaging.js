@@ -453,7 +453,7 @@ class LineMessagingService {
       });
 
       // Extract article content
-      const extractedContent = await articleExtractor.extract(url);
+      const extractedContent = await articleExtractor.extractFromUrl(url);
       
       if (!extractedContent || !extractedContent.content) {
         return {
